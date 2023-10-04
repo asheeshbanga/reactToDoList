@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react'
+import './styles.css'
+import NewToDoForm from './components/NewToDoForm';
+import ToDoList from './components/ToDoList';
 
-function App() {
+export default function App() {
+  const [todos, setTodos] = useState(() => {
+    const localValue = localStorage.getItem("ITEMS");
+    if (localValue == null) return []
+
+    return JSON.parse(localValue);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("ITEMS", JSON.stringify(todos))
+  }, [todos]);
+
+  const addToDo = (title) => {
+    setTodos((currentTodos) => { 
+      return [
+        ...todos, {
+        id: crypto.randomUUID(),
+        title,
+        completed: false
+       }
+      ]
+    })
+  }
+
+
+  const toggleToDo = (id, completed) => {
+    setTodos(currentTodos => {
+      return currentTodos.map(todo => {
+        if (todo.id === id) {
+          return {...todo, completed}
+        }
+        return todo;
+      })
+    })
+  }
+
+  const deleteToDo = (id) => {
+    setTodos(currentTodos => {
+      return currentTodos.filter(todo => todo.id !== id)
+    })
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <>
+      <NewToDoForm onSubmit={addToDo}/>
+      <h1 className="header">Todo List</h1>
+      <ToDoList todos={todos} toggleToDo={toggleToDo} deleteToDo={deleteToDo} />
+    </>
+  )
 }
-
-export default App;
